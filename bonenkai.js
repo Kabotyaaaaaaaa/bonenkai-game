@@ -37,7 +37,7 @@ function updateStatus(message) {
   if (totalDistance >= 70) {
     const finalScore = calculateScore();
     document.getElementById("routes").innerHTML = `
-      <p>すべての行程を終了することができました！</p>
+      <p>すべての山行を終了することができました！</p>
       <p>最終スコア: ${finalScore}点</p>
       <button onclick="resetGame()">ゲーム開始画面に戻る</button>
     `;
@@ -78,7 +78,7 @@ function chooseRoute(route) {
       totalTime += 15;
       totalDistance += routeDistances.risky;  // 危険ルートの距離を加算
       if (Math.random() > 0.5) {
-        result = "危険な道を通り、滑落して体力が減りました。（-20）";
+        result = "危険な道を通り、滑落して体力が減りました。（体力 -20）";
         playerHealth -= 20;
       } else {
         result = "危険な道を通り、無事に通過しました。";
@@ -88,12 +88,12 @@ function chooseRoute(route) {
       const outcome = Math.random();
       totalDistance += routeDistances.adventure;  // 冒険ルートの距離を加算
       if (outcome < 0.3) {
-        result = "冒険ルートで大きな成果を得ました！時間を短縮！";
+        result = "バリエーションルートで大きな成果を得ました！時間を短縮！";
         totalTime -= 10;
       } else if (outcome < 0.7) {
-        result = "冒険ルートで特に何も起きませんでした。";
+        result = "バリエーションルートを無事に通過しました。";
       } else {
-        result = "冒険ルートで怪我をして体力が減りました。（-30）";
+        result = "バリエーションルートで怪我をして体力が減りました。（体力 -30）";
         playerHealth -= 30;
       }
       break;
@@ -118,7 +118,7 @@ function triggerEvent() {
     return "温泉に立ち寄り、体力が少し回復しました！（体力 +15）";
   } else if (random < 0.3) {
     playerHealth -= 20;
-    return "動物に遭遇し、体力が減った！（体力 -20）";
+    return "ヒルに噛まれて、体力が減った！（体力 -20）";
   } else if (random < 0.6) {
     totalTime -= 10;
     return "天気が良く、スムーズに進めた！（所要時間 -10分）";
@@ -195,7 +195,7 @@ function startGame() {
     document.getElementById("routes").innerHTML = `
         <button onclick="chooseRoute('safe')">安全ルート</button>
         <button onclick="chooseRoute('risky')">危険ルート</button>
-        <button onclick="chooseRoute('adventure')">冒険ルート</button>
+        <button onclick="chooseRoute('adventure')">バリエーションルート</button>
     `;
 
   updateStatus("ゲームを開始します！");

@@ -53,6 +53,17 @@ function updateStatus(message) {
   }
 }
 
+// 状態を初期化する関数
+function resetGame() {
+    totalTime = 0;
+    playerHealth = 100;
+    currentLocationIndex = 0;
+    totalDistance = 0;
+  
+    displayStartScreen();
+}
+
+
 // スコア計算 (時間が長いほど減点、体力が多いほど加点)
 function calculateScore() {
     const timePenalty = totalTime * 1;  // 所要時間のペナルティを軽減
@@ -126,16 +137,6 @@ function triggerEvent() {
     totalTime += 20;
     return "雨が降り、足場が悪くなった。（所要時間 +20分）";
   }
-}
-
-// 状態を初期化する関数
-function resetGame() {
-    totalTime = 0;
-    playerHealth = 100;
-    currentLocationIndex = 0;
-    totalDistance = 0;
-  
-    displayStartScreen();
 }
 
 // APIクライアントの初期化

@@ -3,7 +3,6 @@ let totalTime = 0;
 let playerHealth = 100;
 let currentLocationIndex = 0;  // 現在地のインデックス
 let totalDistance = 0;  // 総移動距離（km）
-let playerName = "";  // プレイヤー名を保持
 
 // 登山ルートの移動距離 (各ルート選択ごとの距離)
 const routeDistances = {
@@ -54,25 +53,16 @@ function updateStatus(message) {
   }
 }
 
-function resetGame() {
-  totalTime = 0;
-  playerHealth = 100;
-  currentLocationIndex = 0;
-  totalDistance = 0;
-  playerName = "";  // プレイヤー名をリセット
-  displayStartScreen();
-}
-
 // スコア計算 (時間が長いほど減点、体力が多いほど加点)
 function calculateScore() {
-  const timePenalty = totalTime * 1;  // 所要時間のペナルティを軽減
-  const healthBonus = playerHealth * 10;  // 体力のボーナスを増加
-  const distancePenalty = totalDistance * 0.5;  // 移動距離のペナルティを軽減
-  const baseScore = 3000;  // 基本スコアを引き上げ
-
-  // 総スコア計算
-  const score = baseScore + healthBonus - timePenalty - distancePenalty;
-  return Math.max(score, 0);  // スコアが0未満にならないようにする
+    const timePenalty = totalTime * 1;  // 所要時間のペナルティを軽減
+    const healthBonus = playerHealth * 10;  // 体力のボーナスを増加
+    const distancePenalty = totalDistance * 0.5;  // 移動距離のペナルティを軽減
+    const baseScore = 3000;  // 基本スコアを引き上げ
+  
+    // 総スコア計算
+    const score = baseScore + healthBonus - timePenalty - distancePenalty;
+    return Math.max(score, 0);  // スコアが0未満にならないようにする
 }
 
 // ルート選択
@@ -138,77 +128,75 @@ function triggerEvent() {
   }
 }
 
-// ランキングをGoogle Sheetsに保存
-function saveRanking(name, score) {
-    const scriptURL = "https://script.google.com/macros/s/your-script-id/exec"; // スクリプトIDを適切なものに置き換える
-    const data = { name: name, score: score };
+// 状態を初期化する関数
+function resetGame() {
+    totalTime = 0;
+    playerHealth = 100;
+    currentLocationIndex = 0;
+    totalDistance = 0;
   
-    fetch(scriptURL, {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((response) => response.json())
-      .then((result) => {
-        console.log("ランキングが保存されました:", result);
-      })
-      .catch((error) => {
-        console.error("ランキング保存中にエラーが発生しました:", error);
-      });
+    displayStartScreen();
 }
-  
-  // Google Sheetsからランキングを取得
-function getRankingFromGoogleSheets() {
-    const scriptURL = "https://script.google.com/macros/s/your-script-id/exec"; // スクリプトIDを適切なものに置き換える
-  
-    fetch(scriptURL)
-      .then((response) => response.json())
-      .then((data) => {
-        const ranking = data.ranking || [];
-        const rankingList = ranking
-          .map((entry, index) => `<p>${index + 1}. ${entry.name}: ${entry.score}点</p>`)
-          .join("");
-  
-        document.getElementById("ranking").innerHTML = `
-          <h3>ランキング</h3>
-          ${rankingList}
-        `;
-      })
-      .catch((error) => {
-        console.error("ランキング取得中にエラーが発生しました:", error);
-        document.getElementById("ranking").innerHTML = "<p>ランキングを取得できませんでした。</p>";
-      });
-}
-  
 
-// ゲーム開始画面を表示
+// ゲーム開始画面の表示 (ランキングスタイルを調整)
 function displayStartScreen() {
-  // Google Sheets APIからランキングを取得
-  getRankingFromGoogleSheets();
+    const rankingData = getRankingData();
+    const rankingHTML = rankingData
+        .map((entry, index) => `<li>${index + 1}. ${entry.name}: ${entry.score}点</li>`)
+        .join("");
 
-  document.getElementById("status").innerHTML = `
-    <p>プレイヤー名を入力してください。</p>
-    <input type="text" id="playerNameInput" placeholder="名前を入力">
-    <button onclick="startGame()">ゲーム開始</button>
-  `;
+    document.getElementById("ranking").innerHTML = `
+      <h2>ランキング</h2>
+      <ul id="rankingList">
+        ${rankingHTML || "<li>まだ記録がありません。</li>"}
+      </ul>
+    `;
 
-  document.getElementById("routes").innerHTML = "";
+    document.getElementById("status").innerHTML = `
+      <p>プレイヤー名を入力してください。</p>
+      <input type="text" id="playerNameInput" placeholder="名前を入力">
+      <button onclick="startGame()">ゲーム開始</button>
+    `;
+
+    document.getElementById("routes").innerHTML = "";
+}
+
+// ランキングデータの保存
+function saveRanking(name, score) {
+    let rankingData = getRankingData();
+    
+    // 同じ名前が存在する場合はスコアを更新
+    const existingPlayer = rankingData.find(entry => entry.name === name);
+    if (existingPlayer) {
+        existingPlayer.score = Math.max(existingPlayer.score, score); // 高いスコアを保持
+    } else {
+        rankingData.push({ name, score });
+    }
+
+    rankingData.sort((a, b) => b.score - a.score);
+    localStorage.setItem("ranking", JSON.stringify(rankingData.slice(0, 10))); // 上位10人のみ保存
+}
+
+// ランキングデータの取得
+function getRankingData() {
+    const ranking = localStorage.getItem("ranking");
+    return ranking ? JSON.parse(ranking) : [];
 }
 
 // ゲーム開始
 function startGame() {
-  const nameInput = document.getElementById("playerNameInput");
-  playerName = nameInput.value.trim();
-  if (!playerName) {
-    alert("名前を入力してください。");
-    return;
-  }
+    const nameInput = document.getElementById("playerNameInput");
+    playerName = nameInput.value.trim();
+    if (!playerName) {
+      alert("名前を入力してください。");
+      return;
+    }
 
-  document.getElementById("routes").innerHTML = `
-    <button onclick="chooseRoute('safe')">安全ルート</button>
-    <button onclick="chooseRoute('risky')">危険ルート</button>
-    <button onclick="chooseRoute('adventure')">バリエーションルート</button>
-  `;
+    document.getElementById("routes").innerHTML = `
+        <button onclick="chooseRoute('safe')">安全ルート</button>
+        <button onclick="chooseRoute('risky')">危険ルート</button>
+        <button onclick="chooseRoute('adventure')">バリエーションルート</button>
+    `;
 
   updateStatus("ゲームを開始します！");
 }

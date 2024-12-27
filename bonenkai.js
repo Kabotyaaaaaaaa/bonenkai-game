@@ -53,17 +53,6 @@ function updateStatus(message) {
   }
 }
 
-// 状態を初期化する関数
-function resetGame() {
-    totalTime = 0;
-    playerHealth = 100;
-    currentLocationIndex = 0;
-    totalDistance = 0;
-  
-    displayStartScreen();
-}
-
-
 // スコア計算 (時間が長いほど減点、体力が多いほど加点)
 function calculateScore() {
     const timePenalty = totalTime * 1;  // 所要時間のペナルティを軽減
@@ -139,105 +128,15 @@ function triggerEvent() {
   }
 }
 
-// APIクライアントの初期化
-function initApiClient() {
-    gapi.client.init({
-        'apiKey': 'AIzaSyAOagmZmNiAG0jieIQMOJeOFj2xWp8PTlk',  // Google Cloud Consoleで取得したAPIキーを入力
-        'clientId': '455955919987-6tjnshrrrnij0ctrq181gcu73d5vuvu2.apps.googleusercontent.com',  // OAuth 2.0 クライアントIDを入力
-        'scope': 'https://www.googleapis.com/auth/spreadsheets',
-    }).then(function () {
-        console.log('API Client initialized');
-        checkAuth();  // 認証状態をチェック
-    });
+// 状態を初期化する関数
+function resetGame() {
+    totalTime = 0;
+    playerHealth = 100;
+    currentLocationIndex = 0;
+    totalDistance = 0;
+  
+    displayStartScreen();
 }
-
-// Google Sheets APIに認証する関数
-function authenticate() {
-    return gapi.auth2.getAuthInstance()
-        .signIn()
-        .then(function() {
-            console.log('Sign-in successful');
-        }, function(error) {
-            console.error('Error signing in', error);
-        });
-}
-
-// 認証状態を確認する関数
-function checkAuth() {
-    gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-    updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-}
-
-// サインイン状態が変更されたときに呼ばれる関数
-function updateSigninStatus(isSignedIn) {
-    if (isSignedIn) {
-        console.log('User signed in');
-        // 認証後、Google Sheets APIを呼び出すことができます
-    } else {
-        console.log('User not signed in');
-        // サインインを促す
-        authenticate();
-    }
-}
-
-// APIクライアントを読み込む
-gapi.load('client:auth2', initApiClient);
-
-function saveRankingToGoogleSheets(name, score) {
-    const sheetId = '1Y5civx-iNQq1Xzk4ZNqJvkX0CTGheM7GkI4OHYCjZXY';  // あなたのGoogle SheetsのIDを入力
-
-    const range = 'ranking!A2:B';  // データを保存する範囲（A列に名前、B列にスコア）
-
-    const valueRange = {
-        values: [
-            [name, score]  // 名前とスコアを配列として追加
-        ]
-    };
-
-    // Sheets APIを使ってデータを書き込む
-    const request = gapi.client.sheets.spreadsheets.values.append({
-        spreadsheetId: sheetId,
-        range: range,
-        valueInputOption: 'RAW',
-        resource: valueRange,
-    });
-
-    request.then(function(response) {
-        console.log('Ranking saved:', response);
-        alert('ランキングが保存されました！');
-    }, function(error) {
-        console.error('Error saving ranking:', error);
-    });
-}
-
-function getRankingFromGoogleSheets() {
-    const sheetId = '1Y5civx-iNQq1Xzk4ZNqJvkX0CTGheM7GkI4OHYCjZXY';  // あなたのGoogle SheetsのIDを入力
-    const range = 'ranking!A2:B';  // ランキングを取得する範囲（名前とスコア）
-
-    const request = gapi.client.sheets.spreadsheets.values.get({
-        spreadsheetId: sheetId,
-        range: range,
-    });
-
-    request.then(function(response) {
-        const rankingData = response.result.values;
-        console.log('Ranking data:', rankingData);
-        displayRanking(rankingData);  // ランキングを画面に表示
-    }, function(error) {
-        console.error('Error fetching ranking:', error);
-    });
-}
-
-function displayRanking(rankingData) {
-    const rankingList = document.getElementById('rankingList');
-    rankingList.innerHTML = '';  // 一旦クリア
-    rankingData.forEach(function(row, index) {
-        const listItem = document.createElement('li');
-        listItem.textContent = `${index + 1}. ${row[0]}: ${row[1]}点`;
-        rankingList.appendChild(listItem);
-    });
-}
-
 
 // ゲーム開始画面の表示 (ランキングスタイルを調整)
 function displayStartScreen() {

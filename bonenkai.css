@@ -3,6 +3,9 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f0f8ff;
+    background-image: url('bonenkai1.jpg');  /* ここで背景画像を指定 */
+    background-size: cover;           /* 画面全体に画像がフィットするように */
+    background-position: center;      /* 画像の位置を中央に */
     display: flex;
     justify-content: center;
     align-items: center;
